@@ -3,33 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <title>crm 增删改查的crm</title>
-    <link rel="stylesheet" href="text/css" rel="stylesheet" href="index.css">
+    <link rel="stylesheet" type="text/css" rel="stylesheet" href="css/index.css">
 </head>
 <body>
-<div class="box" class="link">
-    <a href="add.html">增加新客户</a>
+<div class="box" >
+    <a href="add.html"  class="link">增加新客户</a>
     <h2 class="head">
-        <span>编号</span>
-        <span>姓名</span>
-        <span>年龄</span>
-        <span>电话</span>
-        <span>地址</span>
-        <span>操作</span>
-        <ul class="list">
-            <li>
-                <span>1</span>
-                <span>xxx</span>
-                <span>25</span>
-                <span>xxxxxxxxxxx</span>
-                <span>xxxxxxxxxxxxxxxxxxxx</span>
-                <span>
-                    <a href="">修改</a>
-                    <a href="">删除</a>
-                </span>
-            </li>
-        </ul>
+        <span class="w50">编号</span>
+        <span class="w150">姓名</span>
+        <span class="w50">年龄</span>
+        <span class="w200">电话</span>
+        <span class="w200">地址</span>
+        <span class="w150">操作</span>
     </h2>
+    <ul class="list" id="list"></ul>
 </div>
+<script charset="utf-8" type="application/javascript" src="js/jquery.js"></script>
+<script charset="utf-8" type="application/javascript">
+    // 获取客户信息,完成页面的绑定
+    var oList = document.getElementById('list');
+    var cumstomModule  = (function () {
+        function bindHtml (data){
+            var str = '';
+            for(var i=0;i<data.length;i++){
+                var curData  = data[i];
+                str +='<li class="clearfix">';
+                str += '<span class="w50">'+curData['id']+'</span>';//编号
+                str += '<span class="w150">'+curData['name']+'</span>';//姓名
+                str += '<span class="w50">'+curData['age']+'</span>';//年龄
+                str += '<span class="w200">'+curData['phone']+'</span>';//姓名
+                str += '<span class="w200">'+curData['address']+'</span>';//地址
+                str += '<span class="w150 control">';
+                str += '<a href="add.html?id='+curData['id']+'">修改</a>';
+                str += '<a href="javascript:;">删除</a>';
+                str += '</span>';
+                str +='</li>';
+            }
+            oList.innerHTML = str ;
+        };
+        // send ajax back data
+        function init () {
+            $.ajax({
+                method: "POST",
+                url: 'http://localhost:3000/getList',
+                dataType:"json",
+                beforeSend: function () {
+                },
+                success:function(data) {
+                    if(data&&data.code == 0){
+                        var data = data['data'];
+                        bindHtml(data);
+                    }
+                },
+                error: function () {
+                    alert('网络链接错误');
+                }
+            });
+        }
+        return {
+            init: init
+        }
+    })();
+    cumstomModule.init();
 
+
+</script>
 </body>
 </html>

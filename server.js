@@ -1,5 +1,5 @@
 /**
- * Created by issuser on 2017/1/3.
+ * Created by issuser on 2017/1/3.   http://www.zhufengpeixun.cn/course/22/learn#lesson/829
  */
 var http=require('http'),
     url = require('url'),
@@ -39,7 +39,7 @@ var server1 = http.createServer(function (req,res) {
         }
         return;
     };
-    // 获取客户信息列表
+    // 1.获取客户信息列表
     if(pathname === '/getList'){
         //  开始按照api文档中的规范准备给客户端返回数据
         var result = {
@@ -61,7 +61,7 @@ var server1 = http.createServer(function (req,res) {
         res.writeHead(200,{'content-type':'text/html'+';charset = utf-8;'});
         res.end(JSON.stringify(result));
     }
-    //1.查询单个的客户信息
+    //2.查询单个的客户信息
     if(pathname === '/getInfo'){
         customId = query["id"];
         result ={
@@ -69,10 +69,8 @@ var server1 = http.createServer(function (req,res) {
             msg:'客户不存在',
             data:null
         };
-        console.log(customId);
         for(var i=0;i<con.length;i++){
             if(con[i]["id"] == customId){
-                console.log(con[i]);
                 result ={
                     code:0,
                     msg:'成功',
@@ -83,15 +81,13 @@ var server1 = http.createServer(function (req,res) {
             }
         }
         // 返回客户端就ok了
-        res.writeHead(200,{'content-type':'text/html'+';charset = utf-8;'});
-        console.log(result);
+        res.writeHead(200,{'content-type':'application/json'+';charset = utf-8;'});
         res.end(JSON.stringify(result));
         return;
     }
-    //2.删除客户信息
+    //3.删除客户信息
     if(pathname === "/removeInfo"){
         var costomId = query['id'];
-        console.log('remove',1111111111);
         var flag = false;
         for(var i=0; i<con.length;i++){
             if(con[i]['id']== costomId){
@@ -118,82 +114,90 @@ var server1 = http.createServer(function (req,res) {
         res.writeHead(200,{'content-type':'text/html'+';charset = utf-8;'});
         res.end(JSON.stringify(result));
     };
-    // 增加客户信息
-    if(pathname === "/addInfo"){
-        // -> 获取客户端通过请求主体传进过来的内容；
-        var str = '';
-        req.on('data',function (chunk) {
-            str += chunk;
-        });
-        req.on('end',function () {
-            if(str.length === 0){
-                // 客户端增加失败
-                res.writeHead(200,{'content-type':'text/html'+';charset = utf-8;'});
-                res.end(JSON.stringify({
-                    code:1,
-                    msg:'增加失败，没有传递任何需要增加的信息'
-                }));
-                return;
-            }
-            var data = JSON.parse(str);
-            // 在现有的Data中追加一个ID；获取CON中最后一项的Id ，新的Id是在原有基础上加1即可
-            if(con.length === 0){
-                data['id'] = 1;
-            }else{
-                data['id'] =con[con.length-1]['id'];
-            };
-            data['id'] = con.length ===0 ?1:parseFloat(con[con.length-1]['id'])+1;
-            con.push(data);
-            var lastId = con[con.length -1]['id'];
-            fs.writeFileSync(customPath,JSON.stringify(con),'utf-8');
-            res.end(JSON.stringify({
-                    code:1,
+    var str = '';
+    // 4.增加客户信息
+    if( pathname === "/addInfo" ){
+            // 获取客户端请求主体传进来的内容
+            //开始接收
+            req.on('data',function (chunk) {
+                str += chunk;
+            });
+            // 结束接收
+            req.on('end',function () {
+                //json格式的 字符串转化成json 格式的对象；
+                if(str.length == 0){
+                    res.writeHead(200,{'content-type':'text/html'+';charset = utf-8;'});
+                    res.end(JSON.stringify({
+                        code:1,
+                        msg:'增加失败，没有传递任何需要增加的信息'
+                    }));
+                    return;
+                };
+                var data = JSON.parse(str);
+                // 在现有的Data中追加一个ID；获取con中的最后的一项id，新的id是在原有基础上加1即可
+                if(con.length === 0){
+                    data['id'] = 1;
+                }else {
+                    data['id'] = parseFloat(con[con.length -1]['id'])+1;
+                };
+                con.push(data);
+                // 把添加的 用户信息 ，传递给后台写进就constorm里面就ok了；
+                fs.writeFileSync( "./json/constorm.json",JSON.stringify(con),'utf-8');
+                result= {
+                    code:0,
                     msg:"增加成功"
-                    })
-            );
-        });
+                };
+            });
+        res.writeHead(200,{'content-type':'text/html'+';charset = utf-8;'});
+        res.end(JSON.stringify(result));
+        return;
     };
     // 5修改客户信息的接口
     if(pathname =="/updateInfo"){
         str = '';
+        var data =null;
         req.on('data',function (chunk) {
-            str += chunk;
+            str += chunk ;
         });
+        var flag = false;
+        var data = JSON.parse('{"id":"1"}');
         req.on('end',function (chunk) {
-            if(str.length === 0){
-                res.writeHead(200,{'content-type':'text/html'+';charset = utf-8;'});
+            if(str.length ===0){
+                res.writeHead(200,{'content-type':'application/json;charset = utf-8;'});
                 res.end(JSON.stringify({
                     code:1,
-                    msg:'修改失败，没有传递任何需要增加的信息'
+                    msg:'修改失败，没有传递任何需要增加的客户信息'
                 }));
                 return;
-                var flag = false,
-                     data = JSON.parse(str);//客户端传过来的字符串转化成json
-                for(var i=0;i<con.length;i++){
-                    if( con[i]['id'] ==data['id']){
-                        con[i] = data;
-                        flag = true;
-                        break;
-                    }
+            }
+            for(var i =0;i<con.length;i++){
+                if(con[i]['id'] == data['id']){
+                    con[i] = data;
+                    flag = true;
+                    break;
                 };
-                result.msg = "修改失败，需要修改的客户不存在"
-                if(flag){
-                        fs.writeFileSync(customPath,JSON.stringify(con),'utf-8');
-                }
-                result = {
-                    code:0,
-                    msg:"修改成功"
-                }
-                res.writeHead(200,{'content-type':'text/html'+';charset = utf-8;'});
-                res.end(JSON.stringify(result));
-                return;
             };
+            // result.msg = '修改失败,需要修改的客户不存在';
+            // 找到要修改的客户了
+            if(flag === true){
+                fs.writeFileSync( "./json/constorm.json",JSON.stringify(con),'utf-8');
+                console.log( JSON.stringify(con) );
+                result = {
+                    code: 0,
+                    msg :'修改成功',
+                    data:con
+                }
+            };
+            res.writeHead(200,{'content-type':'text/html'+';charset = utf-8;'});
+            res.end(JSON.stringify(result));
         });
-    };
+        // 写完data事件，注意要写return把该返回的就返回回去
+        return;
+    }
     // 如果请求的接口不是上述的任何一个呢，则 提示404找不到文件
     res.writeHead(404,{'content-type':'text/plain'+';charset = utf-8;'});
-    res.end('请求的数据接口不存在');
-});
+    res.end('请求的数据接口不存在')
+})
 server1.listen(3000,function () {
    console.log('server is success,listening on 3000 port!');
 });
